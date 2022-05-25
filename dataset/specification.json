@@ -1,0 +1,114 @@
+{
+    "dataset": {
+        "train": [
+            {
+                "name": "train_vnc_15t02.pkl",
+                "size": {
+                    "sentences": "",
+                    "tokens": ""
+                }
+            }
+        ],
+        "test": [
+            {
+                "name": "test_vnc_15t02.pkl",
+                "size": {
+                    "sentences": "",
+                    "tokens": ""
+                }
+            }
+        ],
+        "dev": [
+            {
+                "name": "dev_vnc_15t02.pkl",
+                "size": {
+                    "sentences": "",
+                    "tokens": ""
+                }
+            }
+        ]
+    },
+    "tag": {
+        "quantity": 16,
+        "0": {
+            "name": "PAD",
+            "entity": "None",
+            "description": ""
+        },
+        "1": {
+            "name": "ADDRESS",
+            "entity": "Address",
+            "description": "Dia chi"
+        },
+        "2": {
+            "name": "SKILL",
+            "entity": "Skill",
+            "description": ""
+        },
+        "3": {
+            "name": "EMAIL",
+            "entity": "Email",
+            "description": ""
+        },
+        "4": {
+            "name": "PERSON",
+            "entity": "Person",
+            "description": ""
+        },
+        "5": {
+            "name": "PHONENUMBER",
+            "entity": "Phone number",
+            "description": "So dien thoai"
+        },
+        "6": {
+            "name": "QUANTITY",
+            "entity": "Quantity",
+            "description": "So va chu so"
+        },
+        "7": {
+            "name": "PERSONTYPE",
+            "entity": "Person type",
+            "description": ""
+        },
+        "8": {
+            "name": "ORGANIZATION",
+            "entity": "Organization",
+            "description": "Don vi to chuc"
+        },
+        "9": {
+            "name": "PRODUCT",
+            "entity": "Product",
+            "description": "San pham"
+        },
+        "10": {
+            "name": "IP",
+            "entity": "",
+            "description": ""
+        },
+        "11": {
+            "name": "LOCATION",
+            "entity": "Location",
+            "description": "Dia diem"
+        },
+        "12": {
+            "name": "O",
+            "entity": "",
+            "description": ""
+        },
+        "13": {
+            "name": "DATETIME",
+            "entity": "Date time",
+            "description": "Ngay thang nam, gio"
+        },
+        "14": {
+            "name": "EVENT",
+            "entity": "Event",
+            "description": ""
+        },
+        "15": {
+            "name": "URL",
+            "entity": "Url",
+            "description": "Duong dan url"
+        }
+    }
+}
