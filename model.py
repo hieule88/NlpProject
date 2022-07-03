@@ -24,7 +24,8 @@ class LSTM_CRF(pl.LightningModule):
                 use_crf: bool = True,
                 batch_first = True,
                 bidirection = True,
-                max_seq_length = 50
+                max_seq_length = 50,
+                **kwargs,
     ):
 
         super().__init__()
