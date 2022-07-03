@@ -1,4 +1,5 @@
 from audioop import avg
+from concurrent.futures import process
 import numpy as np
 import pickle
 import string
@@ -7,6 +8,7 @@ from gensim.models import Word2Vec
 from collections import Counter
 from vncorenlp import VnCoreNLP
 import vnlpc
+import torch
 
 
 class Preprocessor():
@@ -36,6 +38,7 @@ class Preprocessor():
         self.make_one_hot_vector_for_tag("train")
 
 
+
     def preprocess_test(self, path):
         self.load_raw_data(path, "test")
         self.make_one_hot_vector_for_tag("test")
@@ -46,8 +49,16 @@ class Preprocessor():
         self.make_one_hot_vector_for_tag("dev")
         return self.processed_data["dev"]
 
-    def preprocess_method(self):
-        pass
+    def batch_to_matrix(self, data):
+        rs = []
+        for sentence in data:
+            processed_sentence = []
+            for word in sentence:  
+                vector = self.w2vModel_word_to_vector(word)
+                vector = torch.tensor(vector)
+                processed_sentence.append(vector)
+            rs.append(processed_sentence)
+        return rs
 
     def load_raw_data(self, input_path, name):
         with open(input_path, "rb") as f:
@@ -90,7 +101,10 @@ class Preprocessor():
 
     def make_one_hot_vector_for_tag(self, name):
         self.make_tag_lookup_table()
-        rs = []
+        rs = {}
+        rs["sentences"] = []
+        rs["embeddings"] = []
+        rs["labels"] = []
         sentences = self.dataset[name]["sentences"]
         tags = self.dataset[name]["tags"]
         EUI_tag = ["EMAIL", "URL", "IP"]
@@ -98,25 +112,36 @@ class Preprocessor():
             sentence = sentences[i]
             tag = tags[i]
             processed_sentence = []
+            processed_embedding = []
+            processed_label = []
+
             for k in range(len(sentence)):
                 if tag[k] in EUI_tag:
                     tag[k] = "RULE"
                 vector = [0 for i in range(15)]
                 vector[self.tag_table[tag[k]]] = 1
-                # print(vector)
                 vector = np.array(vector)
-                # print(vector)
+                sentence[k] = sentence[k].lower()
                 w2vVector = self.w2vModel_word_to_vector(sentence[k])
-                pair = (sentence[k], w2vVector, str(vector))
-                processed_sentence.append(pair)
-            rs.append(processed_sentence)
+                processed_sentence.append(sentence[k])
+                processed_embedding.append(w2vVector)
+                processed_label.append(vector)
+            rs["sentences"].append(processed_sentence)
+            rs["embeddings"].append(processed_embedding)
+            rs["labels"].append(processed_label)
         self.processed_data[name] = rs
         with open("./dataset/processed_" + name + "_data.pkl", 'wb') as f:
             pickle.dump(rs, f, protocol=pickle.HIGHEST_PROTOCOL)
         return rs
 
     def tokenize(self, sentence):
-        return self.vc.tokenize(sentence)
+        tmps = self.vc.tokenize(sentence.lower())
+        rs = []
+        for tmp in tmps:
+            if tmp not in self.listpunctuation:
+                rs.append(tmp)
+        return rs
+
 
     def w2vModel_from_data(self, data):
         self.w2vModel = Word2Vec(
@@ -137,6 +162,7 @@ class Preprocessor():
         self.avg_vector = sum_vector / self.w2vModel_get_vocab_length()
 
     def w2vModel_word_to_vector(self, word):
+        word = word.lower()
         if(self.w2vModel != None):
             try:
                 return self.w2vModel.wv[word]
