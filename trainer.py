@@ -15,11 +15,11 @@ warnings.filterwarnings("ignore")
 import matplotlib.pyplot as plt
 
 class Trainer():
-    def __init__(self, args, preprocessor):
+    def __init__(self, args):
         self.hparams = args
 
         self.dm = DataModule.from_argparse_args(self.hparams)
-        self.dm.setup(preprocessor)
+        self.dm.setup()
 
         self.metric_name = 'f1'
 

@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from sklearn import preprocessing
 import torch
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
@@ -35,6 +36,8 @@ class DataModule(pl.LightningDataModule):
     ):
         super().__init__()
         self.root_path_other = '/content/NlpProject/dataset'
+        preprocessor = Preprocessor(self.root_path_other + '/train_update_10t01.pkl')
+        self.embed = preprocessor.batch_to_matrix
 
         self.max_seq_length = max_seq_length
         self.train_batch_size = train_batch_size
@@ -49,8 +52,7 @@ class DataModule(pl.LightningDataModule):
         # self.dataset = datasets.load_dataset(*self.dataset_names[self.task_name])
         # self.max_seq_length = self.tokenizer.model_max_length
 
-    def setup(self, preprocessor):
-        self.embed = preprocessor.batch_to_matrix
+    def setup(self, stage):
 
         dataset = {}
 
