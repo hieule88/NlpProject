@@ -8,8 +8,7 @@ from vncorenlp import VnCoreNLP
 import vnlpc
 
 class Preprocessor():
-    def __init__(self, dataset):
-        self.dataset = dataset
+    def __init__(self):
         self.make_tag_lookup_table()
 
         self.listpunctuation = string.punctuation.replace('_', '')
@@ -27,8 +26,11 @@ class Preprocessor():
         self.vc = vnlpc.VNLPClient("http://localhost:39000")
 
         # w2v model
-        self.w2vModel = None
-
+        try:           
+            self.w2vModel_from_file("./word2vec.model")
+        except:
+            self.w2vModel = None
+        
         # GloVe model
         # words = []
         # idx = 0
