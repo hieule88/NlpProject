@@ -4,11 +4,14 @@ import string
 from pprint import pprint
 from gensim.models import Word2Vec
 from collections import Counter
-
+from vncorenlp import VnCoreNLP
+import vnlpc
 
 class Preprocessor():
     def __init__(self, dataset):
         self.dataset = dataset
+        self.make_tag_lookup_table()
+
         self.listpunctuation = string.punctuation.replace('_', '')
         tmp = []
         for i in range(0, len(self.listpunctuation)):
@@ -17,7 +20,31 @@ class Preprocessor():
 
         self.dataset = {}
         self.processed_data = {}
+
+        # VncoreNLP
+        # self.annotator = VnCoreNLP(
+            # "./VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx5g')
+        self.vc = vnlpc.VNLPClient("http://localhost:39000")
+
+        # w2v model
         self.w2vModel = None
+
+        # GloVe model
+        # words = []
+        # idx = 0
+        # word2idx = {}
+        # vectors = []
+        # with open('./GloVe/glove.6B.50d.txt', 'rb') as f:
+        # # with open('./GloVe/glove.42B.300d.txt', 'rb') as f:
+        #     for l in f:
+        #         line = l.decode().split()
+        #         word = line[0]
+        #         words.append(word)
+        #         word2idx[word] = idx
+        #         idx += 1
+        #         vect = np.array(line[1:]).astype(np.float64)
+        #         vectors.append(vect)
+        # self.gloveModel = {w: vectors[word2idx[w]] for w in words}
 
     def preprocess_method(self):
         pass
@@ -76,6 +103,9 @@ class Preprocessor():
             pickle.dump(rs, f, protocol=pickle.HIGHEST_PROTOCOL)
         return rs
 
+    def tokenize(self, sentence):
+        return self.vc.tokenize(sentence)
+
     def w2vModel_from_data(self, data):
         self.w2vModel = Word2Vec(
             sentences=data, min_count=1, vector_size=100, window=5, sg=1)
@@ -88,14 +118,18 @@ class Preprocessor():
         if(self.w2vModel != None):
             return self.w2vModel.wv[word]
 
+    # def gloveModel_get_vector(self, word):
+    #     return self.gloveModel[word]
+
 
 preprocessor = Preprocessor("")
-mapping = preprocessor.make_tag_lookup_table()
-input_path = "./dataset/train_vnc_15t02.pkl"
-model_path = "./word2vec.model"
+print(preprocessor.tokenize("hôm nay là thứ 2"))
+# mapping = preprocessor.make_tag_lookup_table()
+# input_path = "./dataset/train_vnc_15t02.pkl"
+# model_path = "./word2vec.model"
 
-data = preprocessor.load_input_data(input_path=input_path, name="train")
-preprocessor.make_one_hot_vector_for_tag(name="train")
-preprocessor.w2vModel_from_data(data["sentences"])
+# data = preprocessor.load_input_data(input_path=input_path, name="train")
+# preprocessor.make_one_hot_vector_for_tag(name="train")
+# preprocessor.w2vModel_from_data(data["sentences"])
 # preprocessor.w2vModel_from_file(model_path=model_path)
-print(preprocessor.w2vModel_get_vector("vua"))
+# print(preprocessor.w2vModel_get_vector("vua"))
