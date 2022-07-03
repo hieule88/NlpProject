@@ -71,7 +71,6 @@ class Trainer():
     def setup_model(self):
 
         glue_pl = LSTM_CRF(
-            max_sequence_length= self.dm.max_seq_length,
             num_labels=self.dm.num_labels,
             **vars(self.hparams),
         )
