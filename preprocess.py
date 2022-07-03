@@ -120,15 +120,34 @@ class Preprocessor():
     def w2vModel_from_file(self, model_path):
         self.w2vModel = Word2Vec.load(model_path)
 
-    def w2vModel_get_vector(self, word):
+    def w2vModel_word_to_vector(self, word):
         if(self.w2vModel != None):
             return self.w2vModel.wv[word]
 
-    # def gloveModel_get_vector(self, word):
-    #     return self.gloveModel[word]
+    def w2vModel_id_to_vector(self, id):
+        if(self.w2vModel != None):
+            word = self.w2vModel_id_to_word(id)
+            return self.w2vModel_word_to_vector(word)
+
+    def w2vModel_word_to_id(self, word):
+        if(self.w2vModel != None):
+            return self.w2vModel.wv.key_to_index[word]
+
+    def w2vModel_id_to_word(self, id):
+        if(self.w2vModel != None):
+            return self.w2vModel.wv.index_to_key[id]
+
+    def w2vModel_get_vocab(self):
+        if(self.w2vModel != None):
+            return self.w2vModel.wv.index_to_key
+
+    def w2vModel_get_vocab_length(self):
+        if(self.w2vModel != None):
+            return len(self.w2vModel.wv.index_to_key)
 
 
-# preprocessor = Preprocessor("")
+    
+preprocessor = Preprocessor("")
 
 # # load raw data
 # preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
@@ -144,5 +163,8 @@ class Preprocessor():
 # preprocessor.make_one_hot_vector_for_tag("dev")
 
 # # load model to use
-# preprocessor.w2vModel_from_file("./word2vec.model")
+preprocessor.w2vModel_from_file("./word2vec.model")
+vocab = preprocessor.w2vModel_id_to_word(10)
+id = preprocessor.w2vModel_word_to_id(vocab)
+print(id)
 
