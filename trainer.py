@@ -19,7 +19,7 @@ class Trainer():
         self.hparams = args
 
         self.dm = DataModule.from_argparse_args(self.hparams)
-        self.dm.setup()
+        self.dm.setup('fit')
 
         self.metric_name = 'f1'
 
