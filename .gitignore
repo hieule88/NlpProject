@@ -1,4 +1,6 @@
-dataset/
+dataset/processed_dev_data.pkl
+dataset/processed_train_data.pkl
+dataset/processed_test_data.pkl
 projectenv/
 .vscode/
 GloVe/
