@@ -2,7 +2,6 @@ import torch
 from torchcrf import CRF
 import torch.nn as nn
 import pytorch_lightning as pl
-from preprocess import Preprocessor
 from torch.optim import Adam
 import numpy as np
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
@@ -43,8 +42,6 @@ class LSTM_CRF(pl.LightningModule):
         self.eval_batch_size = eval_batch_size
 
         # Preprocess + embed
-        self.preprocessor = Preprocessor()
-
         self.lstm = nn.LSTM(embed_size, hidden_size=hidden_size, bidirectional=bidirection, batch_first=batch_first)
 
         self.dropout = nn.Dropout(p= dropout)

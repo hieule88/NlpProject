@@ -35,8 +35,6 @@ class DataModule(pl.LightningDataModule):
     ):
         super().__init__()
         self.root_path_other = '/content/NlpProject/dataset'
-        self.preprocessor = Preprocessor
-        self.embed = self.preprocessor.batch_to_matrix
 
         self.max_seq_length = max_seq_length
         self.train_batch_size = train_batch_size
@@ -51,7 +49,9 @@ class DataModule(pl.LightningDataModule):
         # self.dataset = datasets.load_dataset(*self.dataset_names[self.task_name])
         # self.max_seq_length = self.tokenizer.model_max_length
 
-    def setup(self):
+    def setup(self, preprocessor):
+        self.embed = preprocessor.batch_to_matrix
+
         dataset = {}
 
         with open(self.root_path_other + '/processed_train_data.pkl', 'rb') as f:

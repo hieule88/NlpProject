@@ -30,12 +30,12 @@ def parse_args():
     return args
 
 
-def main():
+def main(preprocessor):
     # get args
     args = parse_args()
 
     # solve problems
-    problem = Trainer(args)
+    problem = Trainer(args, preprocessor)
     problem.weights_summary = "top"
 
     print('Run')
@@ -44,7 +44,7 @@ def main():
 
 if __name__ == "__main__":
     preprocessor = Preprocessor(train_path= '/content/NlpProject/dataset/train_update_10t01.pkl',\
-                            mode= 'test',\
+                            mode= 'init',\
                             val_path= '/content/NlpProject/dataset/dev_update_10t01.pkl',\
                             test_path= '/content/NlpProject/dataset/test_update_10t01.pkl',)
-    main()
+    main(preprocessor)
