@@ -1,2 +1,8 @@
 dataset/
 projectenv/
+.vscode/
+GloVe/
+*.jar
+*.model
+vietr/
+*.pyc
