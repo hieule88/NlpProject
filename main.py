@@ -23,6 +23,7 @@ def parse_args():
     parser = LSTM_CRF.add_model_specific_args(parser)
     parser = LSTM_CRF.add_learning_specific_args(parser)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--save_path", type=str, default="")
 
     args = parser.parse_args()
 
