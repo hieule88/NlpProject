@@ -20,7 +20,6 @@ class LSTM_CRF(pl.LightningModule):
                 train_batch_size: int = 32,
                 eval_batch_size: int = 32,
                 num_val_dataloader: int = 1,
-                device=None,
                 use_crf: bool = True,
                 batch_first = True,
                 bidirection = True,
@@ -29,7 +28,6 @@ class LSTM_CRF(pl.LightningModule):
     ):
 
         super().__init__()
-        self.device = device
         self.num_labels = num_labels
         self.num_val_dataloader = num_val_dataloader
         self.use_crf = use_crf
@@ -62,8 +60,8 @@ class LSTM_CRF(pl.LightningModule):
         # embed
         batch_size = x.size(0)
 
-        h_0 = torch.zeros(1, batch_size, self.hidden_size).to(self.device)
-        c_0 = torch.zeros(1, batch_size, self.hidden_size).to(self.device)
+        h_0 = torch.zeros(1, batch_size, self.hidden_size).cuda()
+        c_0 = torch.zeros(1, batch_size, self.hidden_size).cuda()
 
         recurrent_features, (h_1, c_1) = self.lstm(x, (h_0, c_0))
         recurrent_features = self.dropout(recurrent_features)
@@ -84,7 +82,7 @@ class LSTM_CRF(pl.LightningModule):
             logits = torch.tensor(self.crf.decode(after_lstm))
             mask = torch.tensor([[1 if labels[j][i] != -2 else 0 \
                                     for i in range(len(labels[j]))] \
-                                    for j in range(len(labels))], dtype=torch.uint8)
+                                    for j in range(len(labels))], dtype=torch.uint8).cuda()
 
             loss = self.crf(after_lstm, labels, mask=mask)
  

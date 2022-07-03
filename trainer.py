@@ -69,7 +69,7 @@ class Trainer():
         return trainer
 
     def setup_model(self):
-            
+        print(self.hparams)    
         glue_pl = LSTM_CRF(
             num_labels=self.dm.num_labels,
             **vars(self.hparams),
