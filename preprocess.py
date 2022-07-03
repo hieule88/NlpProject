@@ -49,7 +49,7 @@ class Preprocessor():
     def preprocess_method(self):
         pass
 
-    def load_input_data(self, input_path, name):
+    def load_raw_data(self, input_path, name):
         with open(input_path, "rb") as f:
             data = pickle.load(f)
         sentences = []
@@ -68,6 +68,12 @@ class Preprocessor():
         self.dataset[name]["sentences"] = sentences
         self.dataset[name]["tags"] = tags
         return self.dataset[name]
+    
+    def load_processed_data(self, input_path, name):
+        with open(input_path, "rb") as f:
+            data = pickle.load(f)
+        self.processed_data[name] = data
+        return data
 
     def make_tag_lookup_table(self):
         ner_labels = ["PAD", "ADDRESS", "SKILL", "EMAIL", "PERSON", "PHONENUMBER", "QUANTITY", "PERSONTYPE",
@@ -95,7 +101,7 @@ class Preprocessor():
                 # print(vector)
                 vector = np.array(vector)
                 # print(vector)
-                pair = (sentence[k], str(vector))
+                pair = (sentence[k], self.w2vModel_get_vector(sentence[k]), str(vector))
                 processed_sentence.append(pair)
             rs.append(processed_sentence)
         self.processed_data[name] = rs
@@ -123,12 +129,26 @@ class Preprocessor():
 
 
 preprocessor = Preprocessor("")
-print(preprocessor.tokenize("hôm nay là thứ 2"))
+
+# preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
+# preprocessor.make_one_hot_vector_for_tag("train")
+# preprocessor.w2vModel_from_data(preprocessor.dataset["train"]["sentences"])
+# preprocessor.w2vModel_get_vector("ngày")
+
+preprocessor.w2vModel_from_file("./word2vec.model")
+preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
+print("here")
+preprocessor.make_one_hot_vector_for_tag("train")
+print("here")
+print(preprocessor.processed_data["train"])
+# print(preprocessor.w2vModel_get_vector("hôm"))
+
+
 # mapping = preprocessor.make_tag_lookup_table()
 # input_path = "./dataset/train_vnc_15t02.pkl"
 # model_path = "./word2vec.model"
 
-# data = preprocessor.load_input_data(input_path=input_path, name="train")
+# data = preprocessor.load_raw_data(input_path=input_path, name="train")
 # preprocessor.make_one_hot_vector_for_tag(name="train")
 # preprocessor.w2vModel_from_data(data["sentences"])
 # preprocessor.w2vModel_from_file(model_path=model_path)
