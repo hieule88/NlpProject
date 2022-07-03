@@ -25,7 +25,7 @@ class DataModule(pl.LightningDataModule):
 
     def __init__(
         self,
-        root_path: str,
+        root_path_other: str,
         max_seq_length: int = 50,
         train_batch_size: int = 32,
         eval_batch_size: int = 32,
@@ -34,7 +34,7 @@ class DataModule(pl.LightningDataModule):
         **kwargs,
     ):
         super().__init__()
-        self.root_path = root_path
+        self.root_path_other = root_path_other
         self.preprocessor = Preprocessor
         self.embed = self.preprocessor.batch_to_matrix
 
@@ -54,11 +54,11 @@ class DataModule(pl.LightningDataModule):
     def setup(self):
         dataset = {}
 
-        with open(self.root_path + '/processed_train_data.pkl', 'rb') as f:
+        with open(self.root_path_other + '/processed_train_data.pkl', 'rb') as f:
             dataset['train'] = pickle.load(f)
-        with open(self.root_path + '/processed_dev_data.pkl', 'rb') as f:
+        with open(self.root_path_other + '/processed_dev_data.pkl', 'rb') as f:
             dataset['validation'] = pickle.load(f)
-        with open(self.root_path + '/processed_test_data.pkl', 'rb') as f:
+        with open(self.root_path_other + '/processed_test_data.pkl', 'rb') as f:
             dataset['test'] = pickle.load(f)
 
         dataset['train'] = Dataset.from_dict(dataset['train'])
@@ -137,5 +137,5 @@ class DataModule(pl.LightningDataModule):
     @staticmethod
     def add_cache_arguments(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument("--root_path", default='', type=str)
+        parser.add_argument("--root_path_other", default='', type=str)
         return parser
