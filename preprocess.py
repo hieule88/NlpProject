@@ -155,20 +155,20 @@ class Preprocessor():
             return len(self.w2vModel.wv.index_to_key)
 
 
-preprocessor = Preprocessor()
+# preprocessor = Preprocessor()
 
 # load raw data
-preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
-preprocessor.load_raw_data("./dataset/test_update_10t01.pkl","test")
-preprocessor.load_raw_data("./dataset/dev_update_10t01.pkl","dev")
+# preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
+# preprocessor.load_raw_data("./dataset/test_update_10t01.pkl","test")
+# preprocessor.load_raw_data("./dataset/dev_update_10t01.pkl","dev")
 
 # # build word2vec model
 # preprocessor.w2vModel_from_data(preprocessor.dataset["train"]["sentences"] + preprocessor.dataset["test"]["sentences"] + preprocessor.dataset["dev"]["sentences"])
 
 # # make on hot vector
-preprocessor.make_one_hot_vector_for_tag("train")
-preprocessor.make_one_hot_vector_for_tag("test")
-preprocessor.make_one_hot_vector_for_tag("dev")
+# preprocessor.make_one_hot_vector_for_tag("train")
+# preprocessor.make_one_hot_vector_for_tag("test")
+# preprocessor.make_one_hot_vector_for_tag("dev")
 
 # # load model to use
 # preprocessor.w2vModel_from_file("./word2vec.model")
