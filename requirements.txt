@@ -13,3 +13,5 @@ six==1.16.0
 smart-open==6.0.0
 tqdm==4.64.0
 word2vec==0.11.1
+pytorch-crf
+pytorch_lightning==1.4.9
