@@ -143,7 +143,7 @@ class Preprocessor():
             rs["embeddings"].append(processed_embedding)
             rs["labels"].append(processed_label)
         self.processed_data[name] = rs
-        with open("./dataset/processed_" + name + "_data.pkl", 'wb') as f:
+        with open("/content/NlpProject/dataset/processed_" + name + "_data.pkl", 'wb') as f:
             pickle.dump(rs, f, protocol=pickle.HIGHEST_PROTOCOL)
         return rs
 

@@ -42,8 +42,8 @@ def main():
     problem.evaluate()  
 
 if __name__ == "__main__":
-    preprocessor = Preprocessor(train_path= './dataset/train_update_10t01.pkl',\
+    preprocessor = Preprocessor(train_path= '/content/NlpProject/dataset/train_update_10t01.pkl',\
                             mode= 'test',\
-                            val_path= './dataset/dev_update_10t01.pkl',\
-                            test_path= './dataset/test_update_10t01.pkl',)
+                            val_path= '/content/NlpProject/dataset/dev_update_10t01.pkl',\
+                            test_path= '/content/NlpProject/dataset/test_update_10t01.pkl',)
     main()
