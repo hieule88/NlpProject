@@ -127,7 +127,7 @@ class DataModule(pl.LightningDataModule):
 
         # Tokenize the text/text pairs
         features = {}
-        features[self.text_fields] = self.embed(texts_or_text_pairs, max_seq_length= self.max_seq_length)
+        features[self.text_fields] = self.embed(data= texts_or_text_pairs, max_seq_length= self.max_seq_length)
 
         # Rename label to labels to make it easier to pass to model forward
         features["labels"] = example_batch['labels']

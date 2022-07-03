@@ -9,8 +9,9 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 from argparse import ArgumentParser
 
 class LSTM_CRF(pl.LightningModule):
-    def __init__(self, embed_size, 
-                num_labels: int,
+    def __init__(self, 
+                num_labels: int = 15,
+                embed_size: int = 100,
                 hidden_size: int = 128,
                 dropout: float = 0.1,
                 learning_rate: float = 2e-5,
@@ -43,7 +44,6 @@ class LSTM_CRF(pl.LightningModule):
 
         # Preprocess + embed
         self.preprocessor = Preprocessor()
-        self.embed = self.preprocessor.batch_to_matrix
 
         self.lstm = nn.LSTM(embed_size, hidden_size=hidden_size, bidirectional=bidirection, batch_first=batch_first)
 
@@ -63,12 +63,11 @@ class LSTM_CRF(pl.LightningModule):
 
         # embed
         batch_size = x.size(0)
-        x = self.embed(x)
 
         h_0 = torch.zeros(1, batch_size, self.hidden_size).to(self.device)
         c_0 = torch.zeros(1, batch_size, self.hidden_size).to(self.device)
 
-        recurrent_features, (h_1, c_1) = self.lstm(input, (h_0, c_0))
+        recurrent_features, (h_1, c_1) = self.lstm(x, (h_0, c_0))
         recurrent_features = self.dropout(recurrent_features)
 
         after_lstm = self.cls_head(recurrent_features)
