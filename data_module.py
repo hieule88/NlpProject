@@ -34,7 +34,7 @@ class DataModule(pl.LightningDataModule):
         **kwargs,
     ):
         super().__init__()
-        self.root_path_other = root_path_other
+        self.root_path_other = '/content/NlpProject/dataset'
         self.preprocessor = Preprocessor
         self.embed = self.preprocessor.batch_to_matrix
 
@@ -137,5 +137,5 @@ class DataModule(pl.LightningDataModule):
     @staticmethod
     def add_cache_arguments(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument("--root_path_other", default='', type=str)
+        # parser.add_argument("--root_path_other", default='', type=str)
         return parser
