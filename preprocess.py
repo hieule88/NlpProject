@@ -98,14 +98,14 @@ class Preprocessor():
         sentences = self.dataset[name]["sentences"]
         tags = self.dataset[name]["tags"]
         EUI_tag = ["EMAIL", "URL", "IP"]
-        for i in range(0, len(sentences)):
+        for i in range(len(sentences)):
             sentence = sentences[i]
             tag = tags[i]
             processed_sentence = []
             for k in range(0, len(sentence)):
                 if tag[k] in EUI_tag:
                     tag[k] = "RULE"
-                vector = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                vector = [0 for i in range(15)]
                 vector[self.tag_table[tag[k]]] = 1
                 # print(vector)
                 vector = np.array(vector)
