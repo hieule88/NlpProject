@@ -17,3 +17,4 @@ pytorch-crf
 pytorch_lightning==1.4.9
 matplotlib
 datasets
+vncorenlp 

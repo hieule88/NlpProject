@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 class Trainer():
     def __init__(self, args):
-        super().__init__(args)
+        self.hparams = args
 
         self.dm = DataModule.from_argparse_args(self.hparams)
         self.dm.setup()
