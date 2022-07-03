@@ -36,7 +36,10 @@ class DataModule(pl.LightningDataModule):
     ):
         super().__init__()
         self.root_path_other = '/content/NlpProject/dataset'
-        preprocessor = Preprocessor(self.root_path_other + '/train_update_10t01.pkl')
+        preprocessor = Preprocessor(train_path= self.root_path_other + '/train_update_10t01.pkl',\
+                            mode= 'init',\
+                            val_path= self.root_path_other + '/dev_update_10t01.pkl',\
+                            test_path= self.root_path_other + '/test_update_10t01.pkl',)
         self.embed = preprocessor.batch_to_matrix
 
         self.max_seq_length = max_seq_length
