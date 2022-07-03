@@ -7,9 +7,9 @@ from collections import Counter
 from vncorenlp import VnCoreNLP
 import vnlpc
 
+
 class Preprocessor():
-    def __init__(self, dataset):
-        self.dataset = dataset
+    def __init__(self):
         self.make_tag_lookup_table()
 
         self.listpunctuation = string.punctuation.replace('_', '')
@@ -23,11 +23,14 @@ class Preprocessor():
 
         # VncoreNLP
         # self.annotator = VnCoreNLP(
-            # "./VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx5g')
+        # "./VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx5g')
         self.vc = vnlpc.VNLPClient("http://localhost:39000")
 
         # w2v model
-        self.w2vModel = None
+        try:
+            self.w2vModel_from_file("./word2vec.model")
+        except:
+            self.w2vModel = None
 
         # GloVe model
         # words = []
@@ -69,7 +72,7 @@ class Preprocessor():
         self.dataset[name]["sentences"] = sentences
         self.dataset[name]["tags"] = tags
         return self.dataset[name]
-    
+
     def load_processed_data(self, input_path, name):
         with open(input_path, "rb") as f:
             data = pickle.load(f)
@@ -77,8 +80,10 @@ class Preprocessor():
         return data
 
     def make_tag_lookup_table(self):
-        ner_labels = ["PAD", "ADDRESS", "SKILL", "EMAIL", "PERSON", "PHONENUMBER", "QUANTITY", "PERSONTYPE",
-                      "ORGANIZATION", "PRODUCT", "IP", "LOCATION", "O", "DATETIME", "EVENT", "URL", "MISCELLANEOUS"]
+        # ner_labels = ["PAD", "ADDRESS", "SKILL", "EMAIL", "PERSON", "PHONENUMBER", "QUANTITY", "PERSONTYPE",
+        #               "ORGANIZATION", "PRODUCT", "IP", "LOCATION", "O", "DATETIME", "EVENT", "URL", "MISCELLANEOUS"]
+        ner_labels = ["PAD", "ADDRESS", "SKILL", "PERSON", "PHONENUMBER", "QUANTITY", "PERSONTYPE",
+                      "ORGANIZATION", "PRODUCT", "LOCATION", "O", "DATETIME", "EVENT", "RULE", "MISCELLANEOUS"]
         table = {}
         i = 0
         for label in ner_labels:
@@ -92,17 +97,21 @@ class Preprocessor():
         rs = []
         sentences = self.dataset[name]["sentences"]
         tags = self.dataset[name]["tags"]
+        EUI_tag = ["EMAIL", "URL", "IP"]
         for i in range(0, len(sentences)):
             sentence = sentences[i]
             tag = tags[i]
             processed_sentence = []
             for k in range(0, len(sentence)):
-                vector = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                if tag[k] in EUI_tag:
+                    tag[k] = "RULE"
+                vector = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                 vector[self.tag_table[tag[k]]] = 1
                 # print(vector)
                 vector = np.array(vector)
                 # print(vector)
-                pair = (sentence[k], self.w2vModel_get_vector(sentence[k]), str(vector))
+                pair = (sentence[k], self.w2vModel_word_to_vector(
+                    sentence[k]), str(vector))
                 processed_sentence.append(pair)
             rs.append(processed_sentence)
         self.processed_data[name] = rs
@@ -121,17 +130,35 @@ class Preprocessor():
     def w2vModel_from_file(self, model_path):
         self.w2vModel = Word2Vec.load(model_path)
 
-    def w2vModel_get_vector(self, word):
+    def w2vModel_word_to_vector(self, word):
         if(self.w2vModel != None):
             return self.w2vModel.wv[word]
 
-    # def gloveModel_get_vector(self, word):
-    #     return self.gloveModel[word]
+    def w2vModel_id_to_vector(self, id):
+        if(self.w2vModel != None):
+            word = self.w2vModel_id_to_word(id)
+            return self.w2vModel_word_to_vector(word)
+
+    def w2vModel_word_to_id(self, word):
+        if(self.w2vModel != None):
+            return self.w2vModel.wv.key_to_index[word]
+
+    def w2vModel_id_to_word(self, id):
+        if(self.w2vModel != None):
+            return self.w2vModel.wv.index_to_key[id]
+
+    def w2vModel_get_vocab(self):
+        if(self.w2vModel != None):
+            return self.w2vModel.wv.index_to_key
+
+    def w2vModel_get_vocab_length(self):
+        if(self.w2vModel != None):
+            return len(self.w2vModel.wv.index_to_key)
 
 
-# preprocessor = Preprocessor("")
+# preprocessor = Preprocessor()
 
-# # load raw data
+# load raw data
 # preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
 # preprocessor.load_raw_data("./dataset/test_update_10t01.pkl","test")
 # preprocessor.load_raw_data("./dataset/dev_update_10t01.pkl","dev")
@@ -147,3 +174,6 @@ class Preprocessor():
 # # load model to use
 # preprocessor.w2vModel_from_file("./word2vec.model")
 
+# vocab = preprocessor.w2vModel_id_to_word(10)
+# id = preprocessor.w2vModel_word_to_id(vocab)
+# print(id)
