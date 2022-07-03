@@ -128,28 +128,21 @@ class Preprocessor():
     #     return self.gloveModel[word]
 
 
-preprocessor = Preprocessor("")
+# preprocessor = Preprocessor("")
 
+# # load raw data
 # preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
-# preprocessor.make_one_hot_vector_for_tag("train")
-# preprocessor.w2vModel_from_data(preprocessor.dataset["train"]["sentences"])
-# preprocessor.w2vModel_get_vector("ngày")
+# preprocessor.load_raw_data("./dataset/test_update_10t01.pkl","test")
+# preprocessor.load_raw_data("./dataset/dev_update_10t01.pkl","dev")
 
+# # build word2vec model
+# preprocessor.w2vModel_from_data(preprocessor.dataset["train"]["sentences"] + preprocessor.dataset["test"]["sentences"] + preprocessor.dataset["dev"]["sentences"])
+
+# # make on hot vector
+# preprocessor.make_one_hot_vector_for_tag("train")
+# preprocessor.make_one_hot_vector_for_tag("test")
+# preprocessor.make_one_hot_vector_for_tag("dev")
+
+# # load model to use
 # preprocessor.w2vModel_from_file("./word2vec.model")
-# preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
-# print("here")
-# preprocessor.make_one_hot_vector_for_tag("train")
-# print("here")
-# print(preprocessor.processed_data["train"])
-# print(preprocessor.w2vModel_get_vector("hôm"))
 
-
-# mapping = preprocessor.make_tag_lookup_table()
-# input_path = "./dataset/train_vnc_15t02.pkl"
-# model_path = "./word2vec.model"
-
-# data = preprocessor.load_raw_data(input_path=input_path, name="train")
-# preprocessor.make_one_hot_vector_for_tag(name="train")
-# preprocessor.w2vModel_from_data(data["sentences"])
-# preprocessor.w2vModel_from_file(model_path=model_path)
-# print(preprocessor.w2vModel_get_vector("vua"))
