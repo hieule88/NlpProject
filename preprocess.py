@@ -135,12 +135,12 @@ preprocessor = Preprocessor("")
 # preprocessor.w2vModel_from_data(preprocessor.dataset["train"]["sentences"])
 # preprocessor.w2vModel_get_vector("ngày")
 
-preprocessor.w2vModel_from_file("./word2vec.model")
-preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
-print("here")
-preprocessor.make_one_hot_vector_for_tag("train")
-print("here")
-print(preprocessor.processed_data["train"])
+# preprocessor.w2vModel_from_file("./word2vec.model")
+# preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
+# print("here")
+# preprocessor.make_one_hot_vector_for_tag("train")
+# print("here")
+# print(preprocessor.processed_data["train"])
 # print(preprocessor.w2vModel_get_vector("hôm"))
 
 
