@@ -97,19 +97,19 @@ class Preprocessor():
         sentences = self.dataset[name]["sentences"]
         tags = self.dataset[name]["tags"]
         EUI_tag = ["EMAIL", "URL", "IP"]
-        for i in range(0, len(sentences)):
+        for i in range(len(sentences)):
             sentence = sentences[i]
             tag = tags[i]
             processed_sentence = []
-            for k in range(0, len(sentence)):
+            for k in range(len(sentence)):
                 if tag[k] in EUI_tag:
                     tag[k] = "RULE"
-                vector = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                vector = [0 for i in range(15)]
                 vector[self.tag_table[tag[k]]] = 1
                 # print(vector)
                 vector = np.array(vector)
                 # print(vector)
-                pair = (sentence[k], self.w2vModel_word_to_vector(
+                pair = (sentence[k], self.w2vModel_word_to_id(sentence[k]) , self.w2vModel_word_to_vector(
                     sentence[k]), str(vector))
                 processed_sentence.append(pair)
             rs.append(processed_sentence)
@@ -167,6 +167,7 @@ class Preprocessor():
 
 # # make on hot vector
 # preprocessor.make_one_hot_vector_for_tag("train")
+# preprocessor.processed_data["train"]
 # preprocessor.make_one_hot_vector_for_tag("test")
 # preprocessor.make_one_hot_vector_for_tag("dev")
 
@@ -176,3 +177,5 @@ class Preprocessor():
 # vocab = preprocessor.w2vModel_id_to_word(10)
 # id = preprocessor.w2vModel_word_to_id(vocab)
 # print(id)
+
+
