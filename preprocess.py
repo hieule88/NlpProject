@@ -12,7 +12,9 @@ import torch
 
 
 class Preprocessor():
-    def __init__(self, train_path):
+    embedding_len = 100
+
+    def __init__(self, train_path, mode='train', val_path= None, test_path= None):
         # train, test, dev
         self.make_tag_lookup_table()
 
@@ -37,6 +39,9 @@ class Preprocessor():
         self.w2vModel_from_data(self.dataset["train"]["sentences"])
         self.make_one_hot_vector_for_tag("train")
 
+        if mode != 'train':
+            self.preprocess_dev(val_path)
+            self.preprocess_test(test_path)
 
 
     def preprocess_test(self, path):
@@ -49,15 +54,23 @@ class Preprocessor():
         self.make_one_hot_vector_for_tag("dev")
         return self.processed_data["dev"]
 
-    def batch_to_matrix(self, data):
+    def batch_to_matrix(self, data, max_seq_length):
         rs = []
         for sentence in data:
             processed_sentence = []
-            for word in sentence:  
-                vector = self.w2vModel_word_to_vector(word)
-                vector = torch.tensor(vector)
-                processed_sentence.append(vector)
-            rs.append(processed_sentence)
+            if len(sentence) > max_seq_length:
+                for word_index in range(max_seq_length):  
+                    vector = self.w2vModel_word_to_vector(sentence[word_index])
+                    processed_sentence.append(vector)
+                rs.append(processed_sentence)
+            else:
+                for word in sentence:  
+                    vector = self.w2vModel_word_to_vector(word)
+                    processed_sentence.append(vector)
+                for i in range(max_seq_length - len(sentence)):
+                    vector = [0 for j in range(self.embedding_len)]
+                    processed_sentence.append(vector)
+                rs.append(processed_sentence)
         return rs
 
     def load_raw_data(self, input_path, name):
