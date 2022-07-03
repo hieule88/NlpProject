@@ -137,5 +137,5 @@ class DataModule(pl.LightningDataModule):
     @staticmethod
     def add_cache_arguments(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument("--root_path", default=True, type=bool)
+        parser.add_argument("--root_path", default='', type=str)
         return parser
