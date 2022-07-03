@@ -1,3 +1,5 @@
+from audioop import avg
+from concurrent.futures import process
 import numpy as np
 import pickle
 import string
@@ -6,10 +8,12 @@ from gensim.models import Word2Vec
 from collections import Counter
 from vncorenlp import VnCoreNLP
 import vnlpc
+import torch
 
 
 class Preprocessor():
-    def __init__(self):
+    def __init__(self, train_path):
+        # train, test, dev
         self.make_tag_lookup_table()
 
         self.listpunctuation = string.punctuation.replace('_', '')
@@ -26,32 +30,35 @@ class Preprocessor():
         # "./VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx5g')
         self.vc = vnlpc.VNLPClient("http://localhost:39000")
 
-        # w2v model
-        try:
-            self.w2vModel_from_file("./word2vec.model")
-        except:
-            self.w2vModel = None
+        self.w2vModel = None
+        self.avg_vector = None
 
-        # GloVe model
-        # words = []
-        # idx = 0
-        # word2idx = {}
-        # vectors = []
-        # with open('./GloVe/glove.6B.50d.txt', 'rb') as f:
-        # # with open('./GloVe/glove.42B.300d.txt', 'rb') as f:
-        #     for l in f:
-        #         line = l.decode().split()
-        #         word = line[0]
-        #         words.append(word)
-        #         word2idx[word] = idx
-        #         idx += 1
-        #         vect = np.array(line[1:]).astype(np.float64)
-        #         vectors.append(vect)
-        # self.gloveModel = {w: vectors[word2idx[w]] for w in words}
+        self.load_raw_data(train_path, "train")
+        self.w2vModel_from_data(self.dataset["train"]["sentences"])
+        self.make_one_hot_vector_for_tag("train")
 
-    # feel free to adjustment
-    def preprocess_method(self):
-        pass
+
+
+    def preprocess_test(self, path):
+        self.load_raw_data(path, "test")
+        self.make_one_hot_vector_for_tag("test")
+        return self.processed_data["test"]
+
+    def preprocess_dev(self, path):
+        self.load_raw_data(path, "dev")
+        self.make_one_hot_vector_for_tag("dev")
+        return self.processed_data["dev"]
+
+    def batch_to_matrix(self, data):
+        rs = []
+        for sentence in data:
+            processed_sentence = []
+            for word in sentence:  
+                vector = self.w2vModel_word_to_vector(word)
+                vector = torch.tensor(vector)
+                processed_sentence.append(vector)
+            rs.append(processed_sentence)
+        return rs
 
     def load_raw_data(self, input_path, name):
         with open(input_path, "rb") as f:
@@ -94,7 +101,10 @@ class Preprocessor():
 
     def make_one_hot_vector_for_tag(self, name):
         self.make_tag_lookup_table()
-        rs = []
+        rs = {}
+        rs["sentences"] = []
+        rs["embeddings"] = []
+        rs["labels"] = []
         sentences = self.dataset[name]["sentences"]
         tags = self.dataset[name]["tags"]
         EUI_tag = ["EMAIL", "URL", "IP"]
@@ -102,37 +112,62 @@ class Preprocessor():
             sentence = sentences[i]
             tag = tags[i]
             processed_sentence = []
-            for k in range(0, len(sentence)):
+            processed_embedding = []
+            processed_label = []
+
+            for k in range(len(sentence)):
                 if tag[k] in EUI_tag:
                     tag[k] = "RULE"
                 vector = [0 for i in range(15)]
                 vector[self.tag_table[tag[k]]] = 1
-                # print(vector)
                 vector = np.array(vector)
-                # print(vector)
-                pair = (sentence[k], self.w2vModel_word_to_vector(
-                    sentence[k]), str(vector))
-                processed_sentence.append(pair)
-            rs.append(processed_sentence)
+                sentence[k] = sentence[k].lower()
+                w2vVector = self.w2vModel_word_to_vector(sentence[k])
+                processed_sentence.append(sentence[k])
+                processed_embedding.append(w2vVector)
+                processed_label.append(vector)
+            rs["sentences"].append(processed_sentence)
+            rs["embeddings"].append(processed_embedding)
+            rs["labels"].append(processed_label)
         self.processed_data[name] = rs
         with open("./dataset/processed_" + name + "_data.pkl", 'wb') as f:
             pickle.dump(rs, f, protocol=pickle.HIGHEST_PROTOCOL)
         return rs
 
     def tokenize(self, sentence):
-        return self.vc.tokenize(sentence)
+        tmps = self.vc.tokenize(sentence.lower())
+        rs = []
+        for tmp in tmps:
+            if tmp not in self.listpunctuation:
+                rs.append(tmp)
+        return rs
+
 
     def w2vModel_from_data(self, data):
         self.w2vModel = Word2Vec(
             sentences=data, min_count=1, vector_size=100, window=5, sg=1)
+        vocabs = self.w2vModel_get_vocab()
+        sum_vector = np.array(self.w2vModel_word_to_vector(vocabs[0]))
+        for index in range(1, len(vocabs)):
+            sum_vector += np.array(self.w2vModel_word_to_vector(vocabs[index]))
+        self.avg_vector = sum_vector / self.w2vModel_get_vocab_length()
         self.w2vModel.save("word2vec.model")
 
     def w2vModel_from_file(self, model_path):
         self.w2vModel = Word2Vec.load(model_path)
+        vocabs = self.w2vModel_get_vocab()
+        sum_vector = np.array(self.w2vModel_word_to_vector(vocabs[0]))
+        for index in range(1, len(vocabs)):
+            sum_vector += np.array(self.w2vModel_word_to_vector(vocabs[index]))
+        self.avg_vector = sum_vector / self.w2vModel_get_vocab_length()
 
     def w2vModel_word_to_vector(self, word):
+        word = word.lower()
         if(self.w2vModel != None):
-            return self.w2vModel.wv[word]
+            try:
+                return self.w2vModel.wv[word]
+            except:
+                return self.avg_vector
 
     def w2vModel_id_to_vector(self, id):
         if(self.w2vModel != None):
@@ -156,24 +191,9 @@ class Preprocessor():
             return len(self.w2vModel.wv.index_to_key)
 
 
-# preprocessor = Preprocessor()
-
-# load raw data
-# preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
-# preprocessor.load_raw_data("./dataset/test_update_10t01.pkl","test")
-# preprocessor.load_raw_data("./dataset/dev_update_10t01.pkl","dev")
-
-# # build word2vec model
-# preprocessor.w2vModel_from_data(preprocessor.dataset["train"]["sentences"] + preprocessor.dataset["test"]["sentences"] + preprocessor.dataset["dev"]["sentences"])
-
-# # make on hot vector
-# preprocessor.make_one_hot_vector_for_tag("train")
-# preprocessor.make_one_hot_vector_for_tag("test")
-# preprocessor.make_one_hot_vector_for_tag("dev")
-
-# # load model to use
-# preprocessor.w2vModel_from_file("./word2vec.model")
-
-# vocab = preprocessor.w2vModel_id_to_word(10)
-# id = preprocessor.w2vModel_word_to_id(vocab)
-# print(id)
+# preprocessor = Preprocessor("./dataset/train_update_10t01.pkl")
+# preprocessor.w2vModel_from_file("./word2vec.model");
+# w2vs = preprocessor.w2vModel.wv
+# w2vs = np.array(w2vs)
+# avgVector = np.average(w2vs, axis = 0)
+# print(avgVector)
