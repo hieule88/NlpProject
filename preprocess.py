@@ -30,7 +30,7 @@ class Preprocessor():
         # VncoreNLP
         # self.annotator = VnCoreNLP(
         # "./VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx5g')
-        self.vc = vnlpc.VNLPClient("http://localhost:39000")
+        # self.vc = vnlpc.VNLPClient("http://localhost:39000")
 
         self.w2vModel = None
         self.avg_vector = None
@@ -147,13 +147,13 @@ class Preprocessor():
             pickle.dump(rs, f, protocol=pickle.HIGHEST_PROTOCOL)
         return rs
 
-    def tokenize(self, sentence):
-        tmps = self.vc.tokenize(sentence.lower())
-        rs = []
-        for tmp in tmps:
-            if tmp not in self.listpunctuation:
-                rs.append(tmp)
-        return rs
+    # def tokenize(self, sentence):
+    #     tmps = self.vc.tokenize(sentence.lower())
+    #     rs = []
+    #     for tmp in tmps:
+    #         if tmp not in self.listpunctuation:
+    #             rs.append(tmp)
+    #     return rs
 
 
     def w2vModel_from_data(self, data):
