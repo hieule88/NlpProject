@@ -149,7 +149,7 @@ class Preprocessor():
 
 
     
-preprocessor = Preprocessor("")
+# preprocessor = Preprocessor("")
 
 # # load raw data
 # preprocessor.load_raw_data("./dataset/train_update_10t01.pkl","train")
@@ -165,8 +165,9 @@ preprocessor = Preprocessor("")
 # preprocessor.make_one_hot_vector_for_tag("dev")
 
 # # load model to use
-preprocessor.w2vModel_from_file("./word2vec.model")
-vocab = preprocessor.w2vModel_id_to_word(10)
-id = preprocessor.w2vModel_word_to_id(vocab)
-print(id)
+# preprocessor.w2vModel_from_file("./word2vec.model")
+
+# vocab = preprocessor.w2vModel_id_to_word(10)
+# id = preprocessor.w2vModel_word_to_id(vocab)
+# print(id)
 
