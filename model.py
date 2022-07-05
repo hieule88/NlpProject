@@ -52,16 +52,18 @@ class LSTM_CRF(pl.LightningModule):
     def init_metric(self, metric):
         self.metric = metric
 
-    def forward(self, input):
+    def forward(self, **inputs):
         # get label 
-        x = input['sentences']
-        labels = input['labels']
+        labels = None
+        if "labels" in inputs:
+            labels = inputs.pop("labels")
+        x = inputs.pop("input_ids")
 
         # embed
-        batch_size = x.size(0)
+        batch_size = x.size[0]
 
-        h_0 = torch.zeros(1, batch_size, self.hidden_size).cuda()
-        c_0 = torch.zeros(1, batch_size, self.hidden_size).cuda()
+        h_0 = torch.zeros(1, batch_size, self.hidden_size)
+        c_0 = torch.zeros(1, batch_size, self.hidden_size)
 
         recurrent_features, (h_1, c_1) = self.lstm(x, (h_0, c_0))
         recurrent_features = self.dropout(recurrent_features)
@@ -82,18 +84,18 @@ class LSTM_CRF(pl.LightningModule):
             logits = torch.tensor(self.crf.decode(after_lstm))
             mask = torch.tensor([[1 if labels[j][i] != -2 else 0 \
                                     for i in range(len(labels[j]))] \
-                                    for j in range(len(labels))], dtype=torch.uint8).cuda()
+                                    for j in range(len(labels))], dtype=torch.uint8)
 
             loss = self.crf(after_lstm, labels, mask=mask)
  
         return loss, logits
 
-    def training_step(self, batch):
+    def training_step(self, batch, batch_idx):
         loss, _ = self(**batch)
         return {"loss": loss}
 
-    def validation_step(self, batch):
-        val_loss, logits = self(None, **batch)
+    def validation_step(self, batch, batch_idx):
+        val_loss, logits = self(**batch)
         if self.num_labels >= 1:
             # preds = torch.argmax(logits, dim=-1)
             preds = logits
@@ -145,7 +147,8 @@ class LSTM_CRF(pl.LightningModule):
                     len(train_loader.dataset)
                     // (self.train_batch_size)
                 )
-                * float(self.max_epochs)
+                * float(5)
+                # * float(self.hparams.max_epochs)
             )
 
     def configure_optimizers(self):

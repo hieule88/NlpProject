@@ -54,23 +54,34 @@ class Preprocessor():
         self.make_one_hot_vector_for_tag("dev")
         return self.processed_data["dev"]
 
-    def batch_to_matrix(self, data, max_seq_length):
+    def batch_to_matrix(self, data, max_seq_length, mode='sentences'):
         rs = []
-        for sentence in data:
-            processed_sentence = []
-            if len(sentence) > max_seq_length:
-                for word_index in range(max_seq_length):  
-                    vector = self.w2vModel_word_to_vector(sentence[word_index])
-                    processed_sentence.append(vector)
-                rs.append(processed_sentence)
-            else:
-                for word in sentence:  
-                    vector = self.w2vModel_word_to_vector(word)
-                    processed_sentence.append(vector)
-                for i in range(max_seq_length - len(sentence)):
-                    vector = [0 for j in range(self.embedding_len)]
-                    processed_sentence.append(vector)
-                rs.append(processed_sentence)
+        if mode == 'sentences':
+            for sentence in data:
+                processed_sentence = []
+                if len(sentence) > max_seq_length:
+                    for word_index in range(max_seq_length):  
+                        vector = self.w2vModel_word_to_vector(sentence[word_index])
+                        processed_sentence.append(vector)
+                    rs.append(processed_sentence)
+                else:
+                    for word in sentence:  
+                        vector = self.w2vModel_word_to_vector(word)
+                        processed_sentence.append(vector)
+                    for i in range(max_seq_length - len(sentence)):
+                        vector = [0 for j in range(self.embedding_len)]
+                        processed_sentence.append(vector)
+                    rs.append(processed_sentence)
+        
+        else:
+            for label in data:
+                if len(label) > max_seq_length:
+                    rs.append(label[:max_seq_length])
+                else:
+                    for i in range(max_seq_length - len(label)):
+                        padding_label = [0 for i in range(15)]
+                        label.append(padding_label)
+                    rs.append(label)
         return rs
 
     def load_raw_data(self, input_path, name):
@@ -143,7 +154,7 @@ class Preprocessor():
             rs["embeddings"].append(processed_embedding)
             rs["labels"].append(processed_label)
         self.processed_data[name] = rs
-        with open("/content/NlpProject/dataset/processed_" + name + "_data.pkl", 'wb') as f:
+        with open("./dataset/processed_" + name + "_data.pkl", 'wb') as f:
             pickle.dump(rs, f, protocol=pickle.HIGHEST_PROTOCOL)
         return rs
 

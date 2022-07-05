@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore")
 class DataModule(pl.LightningDataModule):
 
     loader_columns = [
-        "sentences",
+        "input_ids",
         "labels",
     ]
 
@@ -35,7 +35,7 @@ class DataModule(pl.LightningDataModule):
         **kwargs,
     ):
         super().__init__()
-        self.root_path_other = '/content/NlpProject/dataset'
+        self.root_path_other = './dataset'
         preprocessor = Preprocessor(train_path= self.root_path_other + '/train_update_10t01.pkl',\
                             mode= 'init',\
                             val_path= self.root_path_other + '/dev_update_10t01.pkl',\
@@ -78,15 +78,18 @@ class DataModule(pl.LightningDataModule):
             self.dataset[split] = self.dataset[split].map(
                 self.convert_to_features,
                 batched=True,
-                remove_columns=['labels'],
+                batch_size= 32,
+                remove_columns=['embeddings', 'sentences'],
+                drop_last_batch=True
             )
+
             self.columns = [
                 c
                 for c in self.dataset[split].column_names
                 if c in self.loader_columns
             ]
-
-            self.dataset[split].set_format(type="torch", columns=self.columns)
+            
+        self.dataset.set_format(type="torch", columns=self.columns)
 
     def train_dataloader(self):
         return DataLoader(
@@ -132,11 +135,13 @@ class DataModule(pl.LightningDataModule):
 
         # Tokenize the text/text pairs
         features = {}
-        features[self.text_fields] = self.embed(data= texts_or_text_pairs, max_seq_length= self.max_seq_length)
+        features['input_ids'] = np.array(self.embed(data= texts_or_text_pairs, max_seq_length= self.max_seq_length))
 
         # Rename label to labels to make it easier to pass to model forward
-        features["labels"] = example_batch['labels']
+        features["labels"] = np.array(self.embed(example_batch['labels'], max_seq_length= self.max_seq_length, mode='labels'))
 
+        print(features['input_ids'].shape)
+        print(features['labels'].shape)
         return features
 
     @staticmethod

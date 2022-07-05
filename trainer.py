@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 
 from data_module import DataModule
 from model import LSTM_CRF
+from pprint import pprint
 
 from torch.utils.data import DataLoader
 import warnings
@@ -69,7 +70,6 @@ class Trainer():
         return trainer
 
     def setup_model(self):
-        print(self.hparams)    
         glue_pl = LSTM_CRF(
             num_labels=self.dm.num_labels,
             **vars(self.hparams),
@@ -81,6 +81,11 @@ class Trainer():
     def train(self, model):
         
         trainer = self.setup_trainer()
+
+        print(self.dm.dataset['train'])
+        print(self.dm.dataset['train'].format)
+        pprint(self.dm.dataset['train'][1], compact=True)
+        print(type(self.dm.dataset['train']['input_ids'][0]))
         train_dataloader = DataLoader(self.dm.dataset['train'], batch_size= self.hparams.train_batch_size, shuffle= True, num_workers= self.hparams.num_workers)
         val_dataloader = DataLoader(self.dm.dataset['validation'], batch_size= self.hparams.eval_batch_size, num_workers= self.hparams.num_workers)
         # self.lr_finder(model, trainer, train_dataloader, val_dataloader)
