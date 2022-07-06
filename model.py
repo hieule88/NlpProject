@@ -36,6 +36,7 @@ class LSTM_CRF(pl.LightningModule):
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
         self.max_seq_length = max_seq_length
+        self.callbacks = []
 
         self.train_batch_size = train_batch_size
         self.eval_batch_size = eval_batch_size
@@ -58,12 +59,18 @@ class LSTM_CRF(pl.LightningModule):
         if "labels" in inputs:
             labels = inputs.pop("labels")
         x = inputs.pop("input_ids")
-
+        
+        x = torch.stack(x)
+        x = torch.reshape(x, (x.size()[1], x.size()[0], x.size()[2]))
+        
+        labels = torch.stack(labels)
+        labels = torch.reshape(labels, (labels.size()[1], labels.size()[0], labels.size()[2]))
+        labels = labels.to(dtype=torch.float)
         # embed
-        batch_size = x.size[0]
+        batch_size = x.size()[0]
 
-        h_0 = torch.zeros(1, batch_size, self.hidden_size)
-        c_0 = torch.zeros(1, batch_size, self.hidden_size)
+        h_0 = torch.zeros(2, batch_size, self.hidden_size)
+        c_0 = torch.zeros(2, batch_size, self.hidden_size)
 
         recurrent_features, (h_1, c_1) = self.lstm(x, (h_0, c_0))
         recurrent_features = self.dropout(recurrent_features)
@@ -72,12 +79,13 @@ class LSTM_CRF(pl.LightningModule):
         if after_lstm.isnan().any():
             raise Exception(f"NaN after CLS head")
 
-        if not self.use_crf:
+        # if not self.use_crf:
+        if self.use_crf:
             logits = after_lstm
             loss_fct = nn.CrossEntropyLoss(ignore_index= -2)
 
             loss = loss_fct(logits.reshape((logits.shape[0]*logits.shape[1], logits.shape[2])),\
-                                            labels.reshape((labels.shape[0]*labels.shape[1])))
+                            labels.reshape((labels.shape[0]*labels.shape[1], labels.shape[2])))
 
         else:   
 
@@ -97,13 +105,16 @@ class LSTM_CRF(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         val_loss, logits = self(**batch)
         if self.num_labels >= 1:
-            # preds = torch.argmax(logits, dim=-1)
-            preds = logits
+            preds = torch.argmax(logits, dim=-1)
+            # preds = logits
         elif self.num_labels == 1:
             preds = logits.squeeze()
-
+        
         labels = batch["labels"]
-                
+        labels = torch.stack(labels)
+        labels = torch.reshape(labels, (labels.size()[1], labels.size()[0], labels.size()[2]))
+        labels = labels.to(dtype=torch.float)
+
         return {"loss": val_loss, "preds": preds, "labels": labels}
 
     def validation_epoch_end(self, outputs):
@@ -112,14 +123,29 @@ class LSTM_CRF(pl.LightningModule):
         loss = torch.stack([x["loss"] for x in outputs]).mean()
         self.log("val_loss", loss, prog_bar=True)
 
-        preds = [i for j in range(len(preds)) for i in preds[j][:labels[j][-1]] ]
-        labels = [i for j in range(len(labels)) for i in labels[j][:labels[j][-1]] ]
+        real_len_labels = [len(labels[j]) for j in range(len(labels))]
+        real_labels = []
+        for j in range(len(labels)):
+            for i in range(len(labels[j])):
+                if -2 not in labels[j][i] :
+                    real_labels.append(np.argmax(labels[j][i], axis=-1))
+                else:
+                    real_len_labels[j] = i
+                    break
+                    
+        # print(preds)
+        real_preds = []
+        for j in range(len(preds)):
+            for i in range(real_len_labels[j]):
+                real_preds.append(preds[j][i])
+        # labels = [i for j in range(len(labels)) for i in labels[j][:labels[j][-1]] ]
+        # preds = [i for j in range(len(preds)) for i in preds[j][:labels[j][-1]] ]
 
         metrics = {}
-        metrics['accuracy'] = accuracy_score(labels, preds)
-        metrics['f1'] = f1_score(labels, preds, average='macro')
-        metrics['recall'] = recall_score(labels, preds, average='macro')
-        metrics['precision'] = precision_score(labels, preds, average='macro')
+        metrics['accuracy'] = accuracy_score(real_labels, real_preds)
+        metrics['f1'] = f1_score(real_labels, real_preds, average='macro')
+        metrics['recall'] = recall_score(real_labels, real_preds, average='macro')
+        metrics['precision'] = precision_score(real_labels, real_preds, average='macro')
 
         self.log_dict(metrics, prog_bar=True)
 

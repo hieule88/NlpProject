@@ -1,10 +1,7 @@
+import torch
 import numpy as np
-x=[[[1,2],[3,4],[5,6]], [[1,2],[3,4],[5,6]]]
 
-x= np.array(x)
-print(x)
-print(type(x))
-print(x[0])
-print(type(x[0]))
-print(x[0][0])
-print(type(x[0][0]))
+a= [[[-2, -2, -2], [-2, -2, -2]]]
+a = np.array(a)
+preds = np.argmax(a, axis=-1)
+print(preds)

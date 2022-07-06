@@ -79,7 +79,7 @@ class Preprocessor():
                     rs.append(label[:max_seq_length])
                 else:
                     for i in range(max_seq_length - len(label)):
-                        padding_label = [0 for i in range(15)]
+                        padding_label = [-2 for i in range(15)]
                         label.append(padding_label)
                     rs.append(label)
         return rs
@@ -154,7 +154,7 @@ class Preprocessor():
             rs["embeddings"].append(processed_embedding)
             rs["labels"].append(processed_label)
         self.processed_data[name] = rs
-        with open("./dataset/processed_" + name + "_data.pkl", 'wb') as f:
+        with open("/content/NlpProject/dataset/processed_" + name + "_data.pkl", 'wb') as f:
             pickle.dump(rs, f, protocol=pickle.HIGHEST_PROTOCOL)
         return rs
 

@@ -35,7 +35,7 @@ class DataModule(pl.LightningDataModule):
         **kwargs,
     ):
         super().__init__()
-        self.root_path_other = './dataset'
+        self.root_path_other = '/content/NlpProject/dataset'
         preprocessor = Preprocessor(train_path= self.root_path_other + '/train_update_10t01.pkl',\
                             mode= 'init',\
                             val_path= self.root_path_other + '/dev_update_10t01.pkl',\
@@ -140,8 +140,6 @@ class DataModule(pl.LightningDataModule):
         # Rename label to labels to make it easier to pass to model forward
         features["labels"] = np.array(self.embed(example_batch['labels'], max_seq_length= self.max_seq_length, mode='labels'))
 
-        print(features['input_ids'].shape)
-        print(features['labels'].shape)
         return features
 
     @staticmethod
